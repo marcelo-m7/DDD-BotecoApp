@@ -1,7 +1,0 @@
-uma tabela generica que nao tem destino especifico
-
-
-mapear cada entidade pra uma view especicica  -> a view é a referencia do ator que vai consumir a entidade
-exemplo viwe cozinha ver pedidos pratos e pedidos coustums
-balcao ve edidos bebidas e assim por diante
-tabela genericA INDICA destino da entidade

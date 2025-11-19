@@ -1,18 +1,16 @@
-A ideia é: ter **um único YAML** descrevendo o domínio do BotecoPro e, a partir dele, gerar:
+The idea: maintain a single canonical YAML that describes the BotecoPro domain and use it to generate:
 
-* modelos Dart (Flutter),
-* modelos Python (p.ex. SQLAlchemy / Pydantic),
-* SQL (`CREATE TABLE` etc).
+- Dart models (Flutter)
+- Python models (e.g. SQLAlchemy / Pydantic)
+- SQL DDL (`CREATE TABLE`, constraints, indexes)
 
-Abaixo, um mini-“DSL” em YAML** + um exemplo já baseado no MVP do BotecoPro (products, orders, order_items, tables, payments, stock_moves) conforme a proposta técnica [001_domain.yaml].
-
-Na pasta 'PLAN' voce irá encrontrar os arquivos relacionados ao plano. Tenha em mente que o repositorio atual é um icebreaker que deve ser melhorado para compensar as nessecidades detalhadas aqui nesse documento
+This document is a refined, English-language specification for that single-source-of-truth YAML, including a compact DSL and a working MVP example (products, orders, order_items, tables, payments, stock_moves). The repository's `PLAN` folder contains related artifacts; consider this file an improved starting point.
 
 ---
 
-## 1. Estrutura geral do YAML
+**1. YAML structure (high level)**
 
-A sugestão é separar em blocos:
+Keep the YAML split into clear top-level sections:
 
 ```yaml
 version: 1
@@ -28,7 +26,7 @@ targets:
 
 types:
   money:
-    base: int        # armazenado em centavos
+    base: int        # stored as cents
     description: Monetary value in cents.
   uuid_pk:
     base: uuid
@@ -37,26 +35,26 @@ types:
 
 schemas:
   app_config:
-    description: Configuração global e multi-tenancy.
+    description: Global configuration and multi-tenancy.
   org:
-    description: Schemas por organização (org_{slug})
+    description: Per-organization schemas (org_{slug})
 
 entities:
   ...
 ```
 
-Depois, dentro de `entities`, você descreve as tabelas.
+Each entry in `entities` describes a table or domain object.
 
 ---
 
-## 2. Modelo de entidade (tabelas)
+**2. Entity model (tables)**
 
-Padrão sugerido para cada entidade:
+Suggested minimal pattern for each entity:
 
 ```yaml
 entities:
   products:
-    schema: org          # será 'org_{slug}' na geração de SQL
+    schema: org          # becomes 'org_{slug}' for SQL generation
     table_name: products
     description: Product catalog.
     fields:
@@ -90,32 +88,30 @@ entities:
         fields: [active]
 ```
 
-### Campos suportados (sugestão)
+Field options (recommended):
 
-Para cada `field`:
+- `type`: logical type (`string`, `int`, `bool`, `date`, `datetime`, `uuid`, `numeric`, `json`, `money`, `uuid_pk`, ...).
+- `nullable`: `true`/`false`.
+- `default`: text that will be used in SQL (e.g. `now()`, `gen_random_uuid()`) or as a model default.
+- `unique`: boolean.
+- `max_length`: for strings.
+- `precision` / `scale`: for numeric types.
+- `ref`: foreign key reference in the form `schema.entity.field` or `entity.field` (same schema assumed).
 
-* `type`: tipo lógico (string, int, bool, date, datetime, uuid, numeric, json, money, uuid_pk…)
-* `nullable`: `true/false`
-* `default`: string livre para a camada SQL (ex: `now()`, `gen_random_uuid()`).
-* `unique`: bool
-* `max_length`: para strings
-* `precision / scale`: para numéricos
-* `ref`: referência FK — `schema.entity.field` ou apenas `entity.field` (assumindo mesmo schema).
-
-Exemplo de campo com FK:
+Example foreign key field:
 
 ```yaml
 table_id:
   type: uuid
-  ref: tables.id    # gera FK para org.tables(id)
+  ref: tables.id    # generates FK to org.tables(id)
   nullable: false
 ```
 
 ---
 
-## 3. Exemplo completo: MVP BotecoPro em YAML
+**3. Full example: BotecoPro MVP (single YAML)**
 
-Abaixo um **YAML único** com as 6 tabelas mínimas citadas na proposta técnica: Products, Orders, OrderItems, Tables, Payments, StockMoves. 
+The example below contains the minimal set of tables used by the MVP: `products`, `tables`, `orders`, `order_items`, `payments`, `stock_moves`.
 
 ```yaml
 version: 1
@@ -208,7 +204,7 @@ entities:
         type: uuid_pk
       table_id:
         type: uuid
-        ref: tables.id         # FK
+        ref: tables.id
         nullable: false
       status:
         type: string
@@ -302,26 +298,26 @@ entities:
         default: now()
 ```
 
-O arquivo deve ser suficiente para:
+This single YAML should be sufficient to:
 
-* gerar SQL (`CREATE TABLE`, `ALTER TABLE ADD CONSTRAINT`, índices…),
-* gerar classes Dart,
-* gerar modelos Python.
+- generate SQL DDL (`CREATE TABLE`, `ALTER TABLE ADD CONSTRAINT`, indexes...),
+- generate Dart classes,
+- generate Python models.
 
 ---
 
-## 4. Como mapear para cada linguagem (ideia de geração)
+**4. Mapping ideas for target languages**
 
-### Dart (Freezed / json_serializable)
+These are suggested type mappings and generator outputs.
 
-A partir do YAML, o gerador pode mapear:
+**Dart (Freezed / json_serializable)**
 
-* `uuid` → `String` ou classe `UuidValue`
-* `timestamptz` → `DateTime`
-* `money` → `int` (cents)
-* enums → `enum Status { open, closed, cancelled }`
+- `uuid` → `String` (or a small wrapper value object)
+- `timestamptz` → `DateTime`
+- `money` → `int` (cents)
+- YAML enums → Dart `enum` or `String` with generator helpers
 
-Por exemplo, o `orders` viraria:
+Example generated model for `orders` (conceptual):
 
 ```dart
 @freezed
@@ -339,15 +335,13 @@ class Order with _$Order {
 }
 ```
 
-### Python (SQLAlchemy)
+**Python (SQLAlchemy + Pydantic)**
 
-Mapeando tipos:
+- `uuid` → `UUID(as_uuid=True)`
+- `timestamptz` → `DateTime(timezone=True)`
+- `money` → `Integer`
 
-* `uuid` → `UUID(as_uuid=True)`
-* `timestamptz` → `DateTime(timezone=True)`
-* `money` → `Integer`
-
-Orders:
+Example SQLAlchemy mapping (conceptual):
 
 ```python
 class Order(Base):
@@ -361,9 +355,9 @@ class Order(Base):
     closed_at = Column(DateTime(timezone=True), nullable=True)
 ```
 
-### SQL (Postgres)
+**Postgres SQL**
 
-Para `orders`:
+Example DDL for `orders` (conceptual):
 
 ```sql
 create table org_{slug}.orders (
@@ -381,14 +375,23 @@ create index idx_orders_table_status
 
 ---
 
-## 5. Próximos passos práticos recomendados
+**5. Practical next steps**
 
-1. **Ajustar esse YAML** para incluir mais tabelas do teu plano (estoque avançado, fornecedores, funcionários etc.).
-2. Sugerir a estrutura de um **script gerador** (por ex. em Python) que:
+1. Expand the YAML to cover more domain objects (advanced inventory, suppliers, staff, permissions).
+2. Implement a generator script (Python recommended) that:
+   - reads this YAML,
+   - emits `.sql` DDL files per schema and entity,
+   - emits Dart model files (Freezed/json_serializable),
+   - emits Python models (SQLAlchemy + Pydantic).
+3. Add a small CLI and tests to validate round-trip expectations (YAML → code → basic linting).
 
-   * lê esse YAML,
-   * gera arquivos `.sql`,
-   * gera `.dart` (com Freezed),
-   * gera modelos Python.
+This file now serves as a clearer, English-language specification and a basis for building the generator.
 
-Mas com esse modelo acima você já tem uma **base sólida de “single source of truth”** pro BotecoPro.
+---
+
+If you want, I can now:
+
+- generate a first-pass Python generator script scaffold,
+- produce example generated files for one entity (e.g., `orders`), or
+- expand the YAML with additional domain tables.
+
