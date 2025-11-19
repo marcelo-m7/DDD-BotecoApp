@@ -1,0 +1,35 @@
+order_status:
+  - draft
+  - placed
+  - paid
+  - fulfilled
+  - cancelled
+
+payment_method:
+  - cash
+  - card
+  - wallet
+  - other
+
+payment_status:
+  - pending
+  - completed
+  - failed
+  - refunded
+
+stock_movement_type:
+  - in
+  - out
+  - adjustment
+
+po_status:
+  - draft
+  - ordered
+  - received
+  - cancelled
+
+sync_status:
+  - pending
+  - processing
+  - done
+  - failed

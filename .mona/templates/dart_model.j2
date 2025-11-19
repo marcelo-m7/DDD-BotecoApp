@@ -1,0 +1,7 @@
+class {{ entity.entity|capitalize }} {
+{% for name, attr in entity.attributes.items() %}
+  final {{ 'String' if attr.type in ['string','text','uuid'] else ('int' if attr.type=='integer' else ('double' if attr.type=='decimal' else ('bool' if attr.type=='boolean' else 'Map<String,dynamic>')))) }} {{ name }};
+{% endfor %}
+
+  {{ entity.entity|capitalize }}({{% for name, attr in entity.attributes.items() %}required this.{{ name }}{% if not loop.last %}, {% endif %}{% endfor %}});
+}

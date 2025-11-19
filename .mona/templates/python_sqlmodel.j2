@@ -1,0 +1,12 @@
+from sqlmodel import SQLModel, Field
+from typing import Optional
+from datetime import datetime
+import uuid
+
+class {{ entity.entity|capitalize }}(SQLModel, table=True):
+{% for name, attr in entity.attributes.items() %}
+    {{ name }}: {{ 'Optional[' if attr.get('nullable', False) else '' }}{{ 'str' if attr.type in ['string','text'] else ('int' if attr.type=='integer' else ('float' if attr.type=='decimal' else ('bool' if attr.type=='boolean' else ('dict' if attr.type in ['json','jsonb'] else 'str')))) }}{{ ']' if attr.get('nullable', False) else '' }} = Field(
+        default={{ attr.get('default','None') if not isinstance(attr.get('default'), str) else ('"' + attr.get('default') + '"') }},
+        primary_key={{ 'True' if attr.get('primary_key') else 'False' }}
+    )
+{% endfor %}

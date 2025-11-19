@@ -1,0 +1,15 @@
+metamodel:
+  name: botecopro
+  version: 1.0.0
+  source: db-meta/schemas
+  default_schema: public
+  dialects:
+    - postgresql
+    - sqlite
+  generated_targets:
+    - sql
+    - python
+    - dart
+  conventions:
+    pk_name: id
+    timestamp_default: now()

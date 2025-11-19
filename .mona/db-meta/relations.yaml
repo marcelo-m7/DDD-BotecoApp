@@ -1,0 +1,10 @@
+relations:
+  users--businesses.owner: auth.users.id -> business.businesses.owner_id (one_to_many)
+  businesses--members: business.businesses.id -> business.business_members.business_id (one_to_many)
+  products--businesses: products.products.business_id -> business.businesses.id (many_to_one)
+  categories--businesses: products.categories.business_id -> business.businesses.id (many_to_one)
+  orders--businesses: sales.orders.business_id -> business.businesses.id (many_to_one)
+  order_items--orders: sales.order_items.order_id -> sales.orders.id (many_to_one)
+  payments--orders: sales.payments.order_id -> sales.orders.id (many_to_one)
+  stock_movements--products: inventory.stock_movements.product_id -> products.products.id (many_to_one)
+  device_sessions--businesses: sessions.device_sessions.business_id -> business.businesses.id (many_to_one)
