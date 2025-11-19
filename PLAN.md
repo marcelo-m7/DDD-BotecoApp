@@ -389,9 +389,3 @@ This file now serves as a clearer, English-language specification and a basis fo
 
 ---
 
-If you want, I can now:
-
-- generate a first-pass Python generator script scaffold,
-- produce example generated files for one entity (e.g., `orders`), or
-- expand the YAML with additional domain tables.
-

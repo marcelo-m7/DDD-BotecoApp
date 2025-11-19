@@ -1,1 +1,7 @@
 .mona.me.ignore/
+.venv/
+
+__pycache__/
+*.pyc
+.codemachine/
+.venv/
