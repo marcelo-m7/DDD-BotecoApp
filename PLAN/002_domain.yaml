@@ -1,69 +1,34 @@
 botecopro_domain:
-  version: 1.1
+  version: 1.0
   project: boteco_pro
-  description: "BotecoPro Unified Domain Model - Language Agnostic, UUID everywhere"
+  description: "BotecoPro Unified Domain Model - Language Agnostic"
 
   metadata:
     offline_first: true
-    id_strategy: "uuid_everywhere"
+    uuid_primary:
+      - Comanda
+      - DomainEvent
     money_unit: "cents"
-    timestamps: "iso8601_utc"
-    # Campos padrão de sync recomendados para geração automática
+    timestamps: "iso8601"
     sync_fields: ["last_modified", "dirty", "origin_device"]
 
   targets:
-    dart:
-      null_safety: true
     python:
       orm: sqlalchemy
-      models: pydantic
+      db: sqlite
     sql:
-      dialect: postgres
-      multi_tenant: schema_per_org   # ex: org_{slug}
+      dialect: sqlite
+    dart:
+      enabled: true
 
-  ############################################################
-  # TYPE ALIASES (para geração de código)
-  ############################################################
   types:
-    uuid_pk:
-      base: uuid
-      primary_key: true
-      default: gen_random_uuid()
-
-    uuid:
-      base: uuid
-
-    money:
+    money_cents:
       base: int
-      description: "Monetary amount in cents."
-
+      description: Monetary value in cents.
     timestamp:
-      base: timestamptz
-      description: "UTC timestamp, serialized as ISO8601."
-      default: now()
+      base: datetime
+      format: iso8601
 
-    quantity:
-      base: numeric
-      precision: 10
-      scale: 3
-
-    percent:
-      base: numeric
-      precision: 5
-      scale: 2
-
-  ############################################################
-  # SCHEMAS (multi-tenant)
-  ############################################################
-  schemas:
-    app_config:
-      description: "Global configuration and multi-tenancy control."
-    org:
-      description: "Per-organization schemas, e.g. org_{slug}."
-
-  ############################################################
-  # ENUMS
-  ############################################################
   enums:
     ItemType: ["dish", "drink", "article"]
     OrderStatus: ["open", "preparing", "ready", "delivered", "cancelled"]
@@ -73,169 +38,155 @@ botecopro_domain:
     MovementType: ["in", "out", "adjustment"]
     OriginType: ["table", "takeaway", "delivery"]
 
-  ############################################################
-  # ENTITIES
-  ############################################################
   entities:
 
-    ##########################################################
+    ############################################################
     # CATEGORY
-    ##########################################################
-    categories:
-      class_name: Category
-      schema: org
-      table_name: categories
-      description: "High level grouping for menu items."
-      fields:
+    ############################################################
+    Category:
+      storage:
+        table: category
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
-          nullable: false
+          required: true
+      methods: []
 
-    subcategories:
-      class_name: Subcategory
-      schema: org
-      table_name: subcategories
-      description: "Sub-grouping of categories."
-      fields:
+    Subcategory:
+      storage:
+        table: subcategory
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
-          nullable: false
+          required: true
         category_id:
-          type: uuid
-          ref: categories.id
+          type: relation
+          target: Category
+          target_field: id
           nullable: false
+      methods: []
 
-    ##########################################################
-    # PRODUCT (INGREDIENT / ESTOQUE)
-    ##########################################################
-    products:
-      class_name: Product
-      schema: org
-      table_name: products
-      description: "Stock items / ingredients."
-      fields:
+    ############################################################
+    # PRODUCT (INGREDIENT)
+    ############################################################
+    Product:
+      storage:
+        table: product
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
-          nullable: false
+          required: true
         description:
           type: string
-          max_length: 1024
           nullable: true
         cost_price_cents:
-          type: money
+          type: money_cents
           nullable: true
         stock_current:
-          type: quantity
+          type: float
           nullable: true
         stock_minimum:
-          type: quantity
+          type: float
           nullable: true
         unit:
           type: string
-          max_length: 32
           nullable: true
         product_type:
           type: string
-          max_length: 64
           nullable: true
         active:
           type: bool
           default: true
         last_modified:
           type: timestamp
+          nullable: true
         dirty:
           type: bool
           default: false
         origin_device:
           type: string
-          max_length: 128
           nullable: true
+      methods:
+        - calculate_stock_value
 
-    suppliers:
-      class_name: Supplier
-      schema: org
-      table_name: suppliers
-      description: "Product suppliers."
-      fields:
+    Supplier:
+      storage:
+        table: supplier
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
-          nullable: false
+          required: true
         email:
           type: string
-          max_length: 255
           nullable: true
         phone:
           type: string
-          max_length: 64
           nullable: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
+      methods: []
 
-    supplier_products:
-      class_name: SupplierProduct
-      schema: org
-      table_name: supplier_products
-      description: "Supplier specific prices for products."
-      fields:
-        id:
-          type: uuid_pk
+    SupplierProduct:
+      storage:
+        table: supplier_product
+      attributes:
         product_id:
-          type: uuid
-          ref: products.id
-          nullable: false
+          type: relation
+          target: Product
+          target_field: id
+          primary_key: true
         supplier_id:
-          type: uuid
-          ref: suppliers.id
-          nullable: false
+          type: relation
+          target: Supplier
+          target_field: id
+          primary_key: true
         price_cents:
-          type: money
+          type: money_cents
           nullable: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
-      uniques:
-        - name: uq_supplier_products_product_supplier
-          fields: [product_id, supplier_id]
+      methods: []
 
-    ##########################################################
-    # MENU ITEMS (o que realmente é vendido)
-    ##########################################################
-    items:
-      class_name: Item
-      schema: org
-      table_name: items
-      description: "Sellable items (dishes, drinks, articles) derived from products."
-      fields:
+    ############################################################
+    # MENU ITEMS
+    ############################################################
+    Item:
+      storage:
+        table: item
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
-          nullable: false
+          required: true
         description:
           type: string
-          max_length: 1024
           nullable: true
         sale_price_cents:
-          type: money
+          type: money_cents
           nullable: true
         unit_cost_cents:
-          type: money
+          type: money_cents
           nullable: true
         prep_time_min:
           type: int
@@ -243,353 +194,380 @@ botecopro_domain:
         item_type:
           type: enum
           enum: ItemType
+          nullable: false
         category_id:
-          type: uuid
-          ref: categories.id
+          type: relation
+          target: Category
+          target_field: id
           nullable: true
         subcategory_id:
-          type: uuid
-          ref: subcategories.id
+          type: relation
+          target: Subcategory
+          target_field: id
           nullable: true
         active:
           type: bool
           default: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
         last_modified:
           type: timestamp
+          nullable: true
         dirty:
           type: bool
           default: false
         origin_device:
           type: string
-          max_length: 128
           nullable: true
+      methods:
+        - calculate_price
+        - calculate_cost
 
-    item_products:
-      class_name: ItemProduct
-      schema: org
-      table_name: item_products
-      description: "Recipe composition: which products (ingredients) each item uses."
-      fields:
-        id:
-          type: uuid_pk
+    ItemProduct:
+      storage:
+        table: item_product
+      attributes:
         item_id:
-          type: uuid
-          ref: items.id
-          nullable: false
+          type: relation
+          target: Item
+          target_field: id
+          primary_key: true
         product_id:
-          type: uuid
-          ref: products.id
-          nullable: false
+          type: relation
+          target: Product
+          target_field: id
+          primary_key: true
         quantity:
-          type: quantity
+          type: float
           nullable: false
-      uniques:
-        - name: uq_item_products_item_product
-          fields: [item_id, product_id]
+      methods: []
 
-    ##########################################################
+    ############################################################
     # TABLES
-    ##########################################################
-    dining_tables:
-      class_name: DiningTable
-      schema: org
-      table_name: dining_tables
-      description: "Physical tables in the venue."
-      fields:
+    ############################################################
+    DiningTable:
+      storage:
+        table: dining_table
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         table_num:
           type: int
-          nullable: false
+          required: true
         seats:
           type: int
-          default: 0
+          nullable: true
         available:
           type: bool
           default: true
+      methods:
+        - mark_available
+        - mark_unavailable
 
-    ##########################################################
+    ############################################################
     # COMANDA
-    ##########################################################
-    comandas:
-      class_name: Comanda
-      schema: org
-      table_name: comandas
-      description: "Session/tab for a table or customer."
-      fields:
+    ############################################################
+    Comanda:
+      storage:
+        table: comanda
+      attributes:
         id:
-          type: uuid_pk
-        table_id:
           type: uuid
-          ref: dining_tables.id
+          primary_key: true
+        table_id:
+          type: relation
+          target: DiningTable
+          target_field: id
           nullable: true
         status:
           type: enum
           enum: ComandaStatus
-          default: open
+          nullable: false
         opened_at:
           type: timestamp
+          nullable: true
         closed_at:
           type: timestamp
           nullable: true
         subtotal_cents:
-          type: money
-          default: 0
+          type: money_cents
+          nullable: true
         total_cents:
-          type: money
-          default: 0
+          type: money_cents
+          nullable: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
         last_modified:
           type: timestamp
+          nullable: true
         dirty:
           type: bool
           default: false
         origin_device:
           type: string
-          max_length: 128
           nullable: true
+      methods:
+        - calculate_totals
+        - close
+        - reopen
 
-    ##########################################################
+    ############################################################
     # EMPLOYEES & CUSTOMERS
-    ##########################################################
-    employees:
-      class_name: Employee
-      schema: org
-      table_name: employees
-      description: "Staff members."
-      fields:
+    ############################################################
+    Employee:
+      storage:
+        table: employee
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
-          nullable: false
+          nullable: true
         role:
           type: string
-          max_length: 64
           nullable: true
         email:
           type: string
-          max_length: 255
           nullable: true
         hourly_rate_cents:
-          type: money
+          type: money_cents
           nullable: true
+      methods:
+        - clock_in
+        - clock_out
 
-    customers:
-      class_name: Customer
-      schema: org
-      table_name: customers
-      description: "Customers (optional, mostly for tabs or loyalty)."
-      fields:
+    Customer:
+      storage:
+        table: customer
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         name:
           type: string
-          max_length: 255
           nullable: true
         customer_type:
           type: string
-          max_length: 64
           nullable: true
+      methods: []
 
-    ##########################################################
+    ############################################################
     # ORDER HEADER
-    ##########################################################
-    orders:
-      class_name: Order
-      schema: org
-      table_name: orders
-      description: "Logical group of items within a comanda."
-      fields:
+    ############################################################
+    Order:
+      storage:
+        table: "order"
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         comanda_id:
-          type: uuid
-          ref: comandas.id
+          type: relation
+          target: Comanda
+          target_field: id
           nullable: false
         employee_id:
-          type: uuid
-          ref: employees.id
+          type: relation
+          target: Employee
+          target_field: id
           nullable: true
         customer_id:
-          type: uuid
-          ref: customers.id
+          type: relation
+          target: Customer
+          target_field: id
           nullable: true
         origin:
           type: enum
           enum: OriginType
-          default: table
+          nullable: false
         status:
           type: enum
           enum: OrderStatus
-          default: open
+          nullable: false
         created_at:
           type: timestamp
+          nullable: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
         last_modified:
           type: timestamp
+          nullable: true
         dirty:
           type: bool
           default: false
         origin_device:
           type: string
-          max_length: 128
           nullable: true
-      indexes:
-        - name: idx_orders_comanda_status
-          fields: [comanda_id, status]
+      methods:
+        - add_item
+        - remove_item
+        - change_status
+        - total
 
-    ##########################################################
+    ############################################################
     # ORDER ITEMS
-    ##########################################################
-    order_items:
-      class_name: OrderItem
-      schema: org
-      table_name: order_items
-      description: "Items within an order."
-      fields:
+    ############################################################
+    OrderItem:
+      storage:
+        table: order_item
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         order_id:
-          type: uuid
-          ref: orders.id
+          type: relation
+          target: Order
+          target_field: id
           nullable: false
         item_id:
-          type: uuid
-          ref: items.id
+          type: relation
+          target: Item
+          target_field: id
           nullable: false
         quantity:
           type: int
-          default: 1
+          nullable: false
         unit_price_cents:
-          type: money
+          type: money_cents
           nullable: false
         discount_percent:
-          type: percent
-          default: 0
+          type: float
+          nullable: true
         tax_percent:
-          type: percent
-          default: 0
+          type: float
+          nullable: true
         total_cents:
-          type: money
-          nullable: false
+          type: money_cents
+          nullable: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
         last_modified:
           type: timestamp
+          nullable: true
         dirty:
           type: bool
           default: false
         origin_device:
           type: string
-          max_length: 128
           nullable: true
+      methods:
+        - subtotal
+        - apply_discount
 
-    ##########################################################
+    ############################################################
     # INVOICE
-    ##########################################################
-    invoices:
-      class_name: Invoice
-      schema: org
-      table_name: invoices
-      description: "Final invoice for a comanda."
-      fields:
+    ############################################################
+    Invoice:
+      storage:
+        table: invoice
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         comanda_id:
-          type: uuid
-          ref: comandas.id
+          type: relation
+          target: Comanda
+          target_field: id
           nullable: false
         subtotal_cents:
-          type: money
-          nullable: false
+          type: money_cents
+          nullable: true
         tax_total_cents:
-          type: money
-          nullable: false
+          type: money_cents
+          nullable: true
         total_cents:
-          type: money
-          nullable: false
+          type: money_cents
+          nullable: true
         closed_at:
           type: timestamp
+          nullable: true
+      methods:
+        - generate
+        - archive
 
-    ##########################################################
+    ############################################################
     # PAYMENTS
-    ##########################################################
-    payments:
-      class_name: Payment
-      schema: org
-      table_name: payments
-      description: "Payments applied to a comanda."
-      fields:
+    ############################################################
+    Payment:
+      storage:
+        table: payment
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         comanda_id:
-          type: uuid
-          ref: comandas.id
+          type: relation
+          target: Comanda
+          target_field: id
           nullable: false
         method:
           type: enum
           enum: PaymentMethod
+          nullable: false
         amount_cents:
-          type: money
+          type: money_cents
           nullable: false
         received_at:
           type: timestamp
+          nullable: true
         notes:
           type: string
-          max_length: 1024
           nullable: true
+      methods:
+        - refund
 
-    payment_splits:
-      class_name: PaymentSplit
-      schema: org
-      table_name: payment_splits
-      description: "Split payments (per person, per card, etc.)."
-      fields:
+    PaymentSplit:
+      storage:
+        table: payment_split
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         payment_id:
-          type: uuid
-          ref: payments.id
+          type: relation
+          target: Payment
+          target_field: id
           nullable: false
         payee_name:
           type: string
-          max_length: 255
           nullable: true
         amount_cents:
-          type: money
+          type: money_cents
           nullable: false
+      methods: []
 
-    ##########################################################
+    ############################################################
     # STOCK MOVEMENTS
-    ##########################################################
-    stock_movements:
-      class_name: StockMovement
-      schema: org
-      table_name: stock_movements
-      description: "Stock movements for products."
-      fields:
+    ############################################################
+    StockMovement:
+      storage:
+        table: stock_movement
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         product_id:
-          type: uuid
-          ref: products.id
+          type: relation
+          target: Product
+          target_field: id
           nullable: false
         quantity:
-          type: quantity
+          type: float
           nullable: false
         movement_type:
           type: enum
@@ -597,98 +575,109 @@ botecopro_domain:
           nullable: false
         reason:
           type: string
-          max_length: 255
           nullable: true
-        related_order_item_id:
-          type: uuid
-          ref: order_items.id
+        related_order_item:
+          type: relation
+          target: OrderItem
+          target_field: id
           nullable: true
         created_at:
           type: timestamp
+          nullable: true
+      methods:
+        - apply
 
-    ##########################################################
+    ############################################################
     # KITCHEN / BAR TICKETS
-    ##########################################################
-    kitchen_tickets:
-      class_name: KitchenTicket
-      schema: org
-      table_name: kitchen_tickets
-      description: "Ticket que vai para cozinha / bar."
-      fields:
+    ############################################################
+    KitchenTicket:
+      storage:
+        table: kitchen_ticket
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         order_id:
-          type: uuid
-          ref: orders.id
+          type: relation
+          target: Order
+          target_field: id
           nullable: false
         status:
           type: enum
           enum: TicketStatus
-          default: new
+          nullable: false
         created_at:
           type: timestamp
+          nullable: true
+      methods:
+        - advance
+        - mark_ready
 
-    kitchen_ticket_items:
-      class_name: KitchenTicketItem
-      schema: org
-      table_name: kitchen_ticket_items
-      description: "Items pertencentes a um ticket de cozinha."
-      fields:
+    KitchenTicketItem:
+      storage:
+        table: kitchen_ticket_item
+      attributes:
         id:
-          type: uuid_pk
+          type: int
+          primary_key: true
+          autoincrement: true
         ticket_id:
-          type: uuid
-          ref: kitchen_tickets.id
+          type: relation
+          target: KitchenTicket
+          target_field: id
           nullable: false
         order_item_id:
-          type: uuid
-          ref: order_items.id
+          type: relation
+          target: OrderItem
+          target_field: id
           nullable: false
+      methods: []
 
   ############################################################
   # DOMAIN EVENTS (DDD)
   ############################################################
   events:
     OrderOpened:
-      aggregate: orders
+      aggregate: Order
       payload:
-        order_id: uuid
-        comanda_id: uuid
-        table_id: uuid
-        employee_id: uuid
+        order_id: { type: int }
+        comanda_id: { type: uuid }
+        table_id: { type: int }
+        employee_id: { type: int }
 
     ItemAdded:
-      aggregate: orders
+      aggregate: Order
       payload:
-        order_item_id: uuid
-        order_id: uuid
-        item_id: uuid
-        quantity: int
+        order_item_id: { type: int }
+        order_id: { type: int }
+        item_id: { type: int }
+        quantity: { type: int }
 
     ItemStatusChanged:
-      aggregate: order_items
+      aggregate: OrderItem
       payload:
-        order_item_id: uuid
-        from: string
-        to: string
+        order_item_id: { type: int }
+        from: { type: string }
+        to: { type: string }
 
     OrderClosed:
-      aggregate: orders
+      aggregate: Order
       payload:
-        order_id: uuid
-        total_cents: money
+        order_id: { type: int }
+        total_cents: { type: money_cents }
 
     PaymentReceived:
-      aggregate: payments
+      aggregate: Payment
       payload:
-        payment_id: uuid
-        comanda_id: uuid
-        amount_cents: money
-        method: PaymentMethod
+        payment_id: { type: int }
+        comanda_id: { type: uuid }
+        amount_cents: { type: money_cents }
+        method: { type: string }
 
     StockConsumed:
-      aggregate: stock_movements
+      aggregate: StockMovement
       payload:
-        product_id: uuid
-        quantity: quantity
-        order_item_id: uuid
+        product_id: { type: int }
+        quantity: { type: float }
+        order_item_id: { type: int }
