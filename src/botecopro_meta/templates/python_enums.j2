@@ -6,8 +6,9 @@ from enum import Enum
 
 {% for enum in enums.values() %}
 class {{ enum.name }}(str, Enum):
-    {% for val in enum.values %}{{ val.upper().replace('-', '_') }} = "{{ val }}"
-    {% endfor %}
+{% for val in enum.values %}
+    {{ val.upper().replace('-', '_') }} = "{{ val }}"
+{% endfor %}
 
 
 {% endfor %}

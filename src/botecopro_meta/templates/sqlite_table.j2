@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "{{ entity.table }}" (
 {% set column_defs = [] %}
 {% for attr in entity.attributes %}
 {% set col = '"' + attr.name + '" ' + attr.sqlite_type %}
-{% if attr.enum_values %}{% set col = col + ' CHECK ("' + attr.name + '" IN (' + ', '.join("'" + v + "'" for v in attr.enum_values) + '))' %}{% endif %}
+{% if attr.enum_values %}{% set enum_list = "'" + (attr.enum_values | join("','")) + "'" %}{% set col = col + ' CHECK ("' + attr.name + '" IN (' + enum_list + '))' %}{% endif %}
 {% if attr.primary_key and attr.autoincrement and pk_columns|length == 1 %}{% set col = '"' + attr.name + '" INTEGER PRIMARY KEY AUTOINCREMENT' %}{% elif attr.primary_key %}{% set col = col + ' NOT NULL' %}{% endif %}
 {% if not attr.primary_key and not attr.nullable %}{% set col = col + ' NOT NULL' %}{% endif %}
 {% if attr.raw.get('default') is not none %}
@@ -21,5 +21,5 @@ CREATE TABLE IF NOT EXISTS "{{ entity.table }}" (
 );
 {% if entity.indexes %}
 -- Indexes
-{% for idx in entity.indexes %}CREATE {% if idx.get('unique') %}UNIQUE {% endif %}INDEX IF NOT EXISTS idx_{{ entity.table }}_{{ loop.index }} ON "{{ entity.table }}" ({{ ','.join('"' + c + '"' for c in idx.columns) }});
+{% for idx in entity.indexes %}CREATE {% if idx.get('unique') %}UNIQUE {% endif %}INDEX IF NOT EXISTS idx_{{ entity.table }}_{{ loop.index }} ON "{{ entity.table }}" ({% for c in idx.columns %}"{{ c }}"{% if not loop.last %}, {% endif %}{% endfor %});
 {% endfor %}{% endif %}

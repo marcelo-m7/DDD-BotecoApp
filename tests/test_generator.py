@@ -58,3 +58,20 @@ def test_custom_datetime_base_type_mapping() -> None:
     assert last_modified.python_type == "datetime"
     assert last_modified.sqlalchemy_type == "DateTime"
     assert last_modified.sqlite_type == "DATETIME"
+
+
+def test_domain_methods_are_loaded_and_rendered(tmp_path: Path) -> None:
+    domain_path = Path(__file__).resolve().parent.parent / "db-meta" / "tables" / "001_domain.yaml"
+
+    loader = DomainLoader(domain_path)
+    domain = loader.load()
+
+    product = next(entity for entity in domain.entities if entity.name == "Product")
+    assert "calculate_stock_value" in product.methods
+
+    output_dir = tmp_path / "generated"
+    generate(domain_path, output_dir)
+
+    product_model = (output_dir / "python" / "product.py").read_text()
+    assert "def calculate_stock_value(self)" in product_model
+    assert "raise NotImplementedError" in product_model

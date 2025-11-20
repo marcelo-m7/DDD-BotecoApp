@@ -81,6 +81,7 @@ class EntityDefinition:
     table: str
     attributes: List[AttributeDefinition]
     indexes: List[Dict] = field(default_factory=list)
+    methods: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -236,6 +237,7 @@ class DomainLoader:
             table=table,
             attributes=attrs,
             indexes=details.get("indexes", []),
+            methods=details.get("methods", []),
         )
 
     def _python_type(self, base_type: str) -> str:
@@ -320,6 +322,13 @@ def render_python_model_content(entity: EntityDefinition) -> str:
             f"    {attr.name}: {_python_type_hint(attr)} = Column(\n        {column_args}\n    )"
         )
         lines.append("")
+
+    if entity.methods:
+        for method in entity.methods:
+            lines.append(f"    def {method}(self) -> None:")
+            lines.append("        \"\"\"Domain operation stub.\"\"\"")
+            lines.append("        raise NotImplementedError")
+            lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
 

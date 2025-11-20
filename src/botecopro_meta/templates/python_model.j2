@@ -33,3 +33,12 @@ class {{ entity.name }}(Base):
         {% if attr.enum %}SAEnum(enums.{{ attr.enum }}){% else %}{{ attr.sqlalchemy_type }}{% endif %}{% if attr.relation %}, ForeignKey("{{ attr.relation[0] }}.{{ attr.relation[1] }}"){% endif %}{% if attr.primary_key %}, primary_key=True{% endif %}{% if attr.autoincrement %}, autoincrement=True{% endif %}{% if not attr.nullable %}, nullable=False{% endif %}{% if attr.default is not none %}, default={{ attr.default }}{% endif %}
     )
 {% endfor %}
+
+{% if entity.methods %}
+{% for method in entity.methods %}
+    def {{ method }}(self) -> None:
+        """Domain operation stub."""
+        raise NotImplementedError
+
+{% endfor %}
+{% endif %}
