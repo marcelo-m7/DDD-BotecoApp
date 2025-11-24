@@ -111,7 +111,11 @@ class DiningTable(BaseEntity):
         self.tab = tab
 
 class Order(BaseEntity):
-    pass
+    ref: str
+    table_number: int
+    items: list
+    total_amount: float
+    status: str
 
 class Receipt(BaseEntity):
     pass
