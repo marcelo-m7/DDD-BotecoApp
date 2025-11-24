@@ -1,18 +1,20 @@
 from abc import ABC
 import logging
+from datetime import date
 
 logging.basicConfig(
     level=logging.INFO,  
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 
+
 class BaseEntity(ABC):
     def __init__(self,
-                 table_name: str = None,
-                 view_name: str = None,
-                 description: str = None,
-                 created_at: str = None,
-                 updated_at: str = None):
+                 table_name: str,
+                 view_name: str,
+                 description: date,
+                 created_at: date,
+                 updated_at: str = ""):
         pass
     
     def create(self):
@@ -86,12 +88,14 @@ class DiningTable(BaseEntity):
     def __init__(self,
                  table_number: int,
                  capacity: int,
-                 status: str):
+                 status: str,
+                 tab: str = None):
         """Initialize a DiningTable instance."""
         super().__init__(table_name=self.table_name)
         self.table_number = table_number
         self.capacity = capacity
-        self.status = status    
+        self.status = status
+        self.tab = tab
 
 class Order(BaseEntity):
     pass
