@@ -1,68 +1,30 @@
 from abc import ABC
-import logging
 from datetime import date
 from typing import List, Optional
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+from enum import Enum
 
 
 class BaseEntity(ABC):
-    """Base class for all entities."""
-    def __init__(self,
-                 table_name: str,
-                 view_name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 created_at: Optional[date] = None,
-                 updated_at: Optional[date] = None):
-        self.table_name = table_name
-        self.view_name = view_name
+    """Representa uma entidade do domínio, sem DB."""
+    def __init__(self, description: Optional[str] = None):
         self.description = description
-        self.created_at = created_at or date.today()
-        self.updated_at = updated_at or date.today()
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-    # Placeholder methods for CRUD
-    def create(self):
-        """Create a new record in the database."""
-        pass
-
-    def retrieve(self):
-        """Retrieve a record from the database."""
-        pass
-
-    def update(self):
-        """Update a record in the database."""
-        pass
-
-    def delete(self):
-        """Delete a record from the database."""
-        pass
+        self.created_at = date.today()
+        self.updated_at = date.today()
 
 
 class Product(BaseEntity):
-    table_name = "products"
-    view_name = "ProductsView"
-
     def __init__(self,
                  name: str,
-                 description: str,
                  unit: str,
                  current_stock: int,
                  min_stock: int,
                  max_stock: int,
                  cost: float,
                  price: float,
-                 barcode: str,
-                 category: str,
-                 subcategory: str):
-        super().__init__(
-            table_name=self.table_name,
-            view_name=self.view_name,
-            description=description
-        )
+                 barcode: Optional[str] = None,
+                 category: Optional[str] = None,
+                 subcategory: Optional[str] = None):
+        super().__init__(description=category)
         self.name = name
         self.unit = unit
         self.current_stock = current_stock
@@ -76,50 +38,38 @@ class Product(BaseEntity):
 
     def add_stock(self, quantity: int):
         self.current_stock += quantity
-        self.logger.info(f"New stock level: {self.current_stock}")
-        return self.current_stock
 
     def remove_stock(self, quantity: int):
         if quantity > self.current_stock:
-            self.logger.warning(
-                f"Tried to remove {quantity} but current stock is only {self.current_stock}"
-            )
-            raise ValueError("Insufficient stock to remove the requested quantity.")
+            raise ValueError("Insufficient stock.")
         self.current_stock -= quantity
-        self.logger.info(f"New stock level: {self.current_stock}")
-        return self.current_stock
+
+
+class TableStatus(Enum):
+    AVAILABLE = "available"
+    OCCUPIED = "occupied"
+    RESERVED = "reserved"
+    CLEANING = "cleaning"
 
 
 class DiningTable(BaseEntity):
-    table_name = "dining_tables"
-    view_name = "DiningTablesView"
-
-    def __init__(self,
-                 table_number: int,
-                 capacity: int,
-                 status: str,
-                 order_ref: Optional[str] = None):
-        super().__init__(
-            table_name=self.table_name,
-            view_name=self.view_name
-        )
+    def __init__(self, table_number: int, capacity: int, status: TableStatus, order_ref: Optional[str] = None):
+        super().__init__()
         self.table_number = table_number
         self.capacity = capacity
         self.status = status
         self.order_ref = order_ref
 
 
-class Order(BaseEntity):
-    table_name = "orders"
-    view_name = "OrdersView"
+class OrderStatus(Enum):
+    OPEN = "open"
+    CLOSED = "closed"
+    CANCELED = "canceled"
 
-    def __init__(self,
-                 ref: str,
-                 table_number: int,
-                 items: Optional[List[str]] = None,
-                 total_amount: float = 0.0,
-                 status: str = "open"):
-        super().__init__(table_name=self.table_name, view_name=self.view_name)
+
+class Order(BaseEntity):
+    def __init__(self, ref: str, table_number: int, items: Optional[List[str]] = None, total_amount: float = 0.0, status: OrderStatus = OrderStatus.OPEN):
+        super().__init__()
         self.ref = ref
         self.table_number = table_number
         self.items = items or []
@@ -128,19 +78,9 @@ class Order(BaseEntity):
 
 
 class Receipt(BaseEntity):
-    table_name = "receipts"
-    view_name = "ReceiptsView"
-
-    def __init__(self,
-                 name: str,
-                 description: str,
-                 preparation_time: int,
-                 type_: str,
-                 price: float,
-                 instructions: str):
-        super().__init__(table_name=self.table_name, view_name=self.view_name)
+    def __init__(self, name: str, preparation_time: int, type_: str, price: float, instructions: str):
+        super().__init__()
         self.name = name
-        self.description = description
         self.preparation_time = preparation_time
         self.type_ = type_
         self.price = price
@@ -148,15 +88,8 @@ class Receipt(BaseEntity):
 
 
 class Production(BaseEntity):
-    table_name = "production"
-    view_name = "ProductionView"
-
-    def __init__(self,
-                 product_ref: str,
-                 quantity: int,
-                 production_date: Optional[date] = None,
-                 expiry_date: Optional[date] = None):
-        super().__init__(table_name=self.table_name, view_name=self.view_name)
+    def __init__(self, product_ref: str, quantity: int, production_date: Optional[date] = None, expiry_date: Optional[date] = None):
+        super().__init__()
         self.product_ref = product_ref
         self.quantity = quantity
         self.production_date = production_date or date.today()
