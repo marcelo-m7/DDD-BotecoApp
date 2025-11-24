@@ -49,7 +49,7 @@ class Product(BaseEntity):
                  min_stock: int,
                  max_stock: int,
                  cost: int,
-                 sell_price: int,
+                 price: int,
                  barcode: str,
                  category: str,
                  subcategory: str):
@@ -67,7 +67,7 @@ class Product(BaseEntity):
         self.min_stock = min_stock
         self.max_stock = max_stock
         self.cost = cost
-        self.sell_price = sell_price
+        self.price = price
         self.barcode = barcode
         self.category = category
         self.subcategory = subcategory
@@ -118,7 +118,12 @@ class Order(BaseEntity):
     status: str
 
 class Receipt(BaseEntity):
-    pass
+    name: str
+    description: str
+    preparation_time: int
+    category: str
+    subcategory: str
+    price: float
 
 class Production(BaseEntity):
     pass
