@@ -126,4 +126,7 @@ class Receipt(BaseEntity):
     instructions: str
 
 class Production(BaseEntity):
-    pass
+    product_ref: str
+    quantity: int
+    production_date: date
+    expiry_date: date
