@@ -1,3 +1,4 @@
+# TODO: Need to start planning the views to reproduce the layout and begin mapping titles for the translation mechanism.
 from abc import ABC
 from datetime import date
 from typing import List, Optional
