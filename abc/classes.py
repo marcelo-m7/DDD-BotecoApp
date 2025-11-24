@@ -103,3 +103,7 @@ class Supplier(BaseEntity):
         self.contact_info = contact_info
         self.products_supplied = products_supplied or []
         self.notes = ""
+        
+    def add_product(self, product_ref: str):
+        if product_ref not in self.products_supplied:
+            self.products_supplied.append(product_ref)
