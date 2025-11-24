@@ -12,10 +12,13 @@ class BaseEntity(ABC):
     def __init__(self,
                  table_name: str,
                  view_name: str,
-                 description: date,
-                 created_at: date,
-                 updated_at: str = ""):
-        pass
+                 description: str,
+                 created_at = None = None,
+                 updated_at: date = None):
+        """Initialize a BaseEntity instance."""
+        self.table_name = table_name
+        self.view_name = view_name
+        self.logger = logging.getLogger(self.__class__.__name__)
     
     def create(self):
         """Create a new record in the database."""
@@ -36,7 +39,7 @@ class BaseEntity(ABC):
 class Product(BaseEntity):
     table_name = "products"
     view_name = "ProductsView"    
-    logger = logging.getLogger("Product")
+    logger = logging.getLogger("Product")    
     
     def __init__(self,
                  name: str,
@@ -51,7 +54,12 @@ class Product(BaseEntity):
                  category: str,
                  subcategory: str):
         """Initialize a Product instance."""
-        super().__init__(table_name=self.table_name)
+        super().__init__(
+            table_name=self.table_name,
+            view_name=self.view_name,
+            description=description,
+            created_at=date.today(),
+        )
         self.name = name
         self.description = description
         self.unit = unit
@@ -85,13 +93,18 @@ class DiningTable(BaseEntity):
     view_name = "DiningTablesView"    
     logger = logging.getLogger("DiningTable")
     
+    
     def __init__(self,
                  table_number: int,
                  capacity: int,
                  status: str,
-                 tab: str = None):
+                 tab: str):
         """Initialize a DiningTable instance."""
         super().__init__(table_name=self.table_name)
+        self.table_number = table_number
+        self.capacity = capacity
+        self.status = status
+        self.tab = tab
         self.table_number = table_number
         self.capacity = capacity
         self.status = status
