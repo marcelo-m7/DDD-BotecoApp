@@ -121,9 +121,9 @@ class Receipt(BaseEntity):
     name: str
     description: str
     preparation_time: int
-    category: str
-    subcategory: str
+    type: str
     price: float
+    instructions: str
 
 class Production(BaseEntity):
     pass
