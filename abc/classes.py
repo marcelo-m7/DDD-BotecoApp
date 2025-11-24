@@ -1,4 +1,10 @@
 from abc import ABC
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 
 class BaseEntity(ABC):
     def __init__(self,
@@ -27,6 +33,7 @@ class BaseEntity(ABC):
 
 class Product(BaseEntity):
     table_name = "products"    
+    logger = logging.getLogger("Product")
     
     def __init__(self,
                  name: str,
@@ -55,17 +62,19 @@ class Product(BaseEntity):
         self.subcategory = subcategory
     
     def add_stock(self, quantity: int):
-        """Add stock to the current stock level."""
         self.current_stock += quantity
-        print(f"New stock level: {self.current_stock}")
-        return self.current_stock    
-        
+        self.logger.info(f"New stock level: {self.current_stock}")
+        return self.current_stock
+
     def remove_stock(self, quantity: int):
-        """Remove stock from the current stock level."""
         if quantity > self.current_stock:
+            self.logger.warning(
+                f"Tried to remove {quantity} but current stock is only {self.current_stock}"
+            )
             raise ValueError("Insufficient stock to remove the requested quantity.")
+        
         self.current_stock -= quantity
-        print(f"New stock level: {self.current_stock}")
+        self.logger.info(f"New stock level: {self.current_stock}")
         return self.current_stock
     
 class DiningTable(BaseEntity):
