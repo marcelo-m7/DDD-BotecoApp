@@ -8,8 +8,8 @@ logging.basicConfig(
 
 class BaseEntity(ABC):
     def __init__(self,
-                 id: int = None,
                  table_name: str = None,
+                 view_name: str = None,
                  description: str = None,
                  created_at: str = None,
                  updated_at: str = None):
@@ -32,7 +32,8 @@ class BaseEntity(ABC):
         pass
 
 class Product(BaseEntity):
-    table_name = "products"    
+    table_name = "products"
+    view_name = "ProductsView"    
     logger = logging.getLogger("Product")
     
     def __init__(self,
@@ -78,7 +79,19 @@ class Product(BaseEntity):
         return self.current_stock
     
 class DiningTable(BaseEntity):
-    pass
+    table_name = "dining_tables"
+    view_name = "DiningTablesView"    
+    logger = logging.getLogger("DiningTable")
+    
+    def __init__(self,
+                 table_number: int,
+                 capacity: int,
+                 status: str):
+        """Initialize a DiningTable instance."""
+        super().__init__(table_name=self.table_name)
+        self.table_number = table_number
+        self.capacity = capacity
+        self.status = status    
 
 class Order(BaseEntity):
     pass
