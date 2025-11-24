@@ -94,3 +94,12 @@ class Production(BaseEntity):
         self.quantity = quantity
         self.production_date = production_date or date.today()
         self.expiry_date = expiry_date
+
+class Supplier(BaseEntity):
+    def __init__(self, name: str, address: str, contact_info: str, products_supplied: Optional[List[str]] = None):
+        super().__init__()
+        self.name = name
+        self.address = address
+        self.contact_info = contact_info
+        self.products_supplied = products_supplied or []
+        self.notes = ""
