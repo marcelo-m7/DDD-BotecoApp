@@ -5,6 +5,11 @@ from typing import List, Optional
 from enum import Enum
 
 
+# Entities
+# Value Objects
+# Domain Services
+# Enums como “ubiquitous language”
+
 class Entity:
     """Representa uma entidade do domínio, sem DB."""
     def __init__(self, 
@@ -58,9 +63,18 @@ class Product(Entity):
                  barcode: Optional[str] = None,
                  category: Optional[ProductCategory] = None,
                  subcategory: Optional[ProductSubcategory] = None):
-        self.title = name
-        self.description = description
+        # Initialize inherited fields
+        super().__init__(title=name, description=description)
         self.content: Optional[str] = None
+
+        # Basic validations
+        if min_stock > max_stock:
+            raise ValueError("min_stock cannot be greater than max_stock")
+        if current_stock < 0 or min_stock < 0 or max_stock < 0:
+            raise ValueError("stock values cannot be negative")
+        if cost < 0 or price < 0:
+            raise ValueError("cost and price must be non-negative")
+
         self.unit = unit
         self.current_stock = current_stock
         self.min_stock = min_stock
@@ -90,8 +104,8 @@ class TableStatus(Enum):
 
 class DiningTable(Entity):
     def __init__(self, table_number: int, capacity: int, status: TableStatus, order_ref: Optional[str] = None):
-        super().__init__()
-        self.title = table_number
+        # Use the table number as the title (string) to keep `title` textual
+        super().__init__(title=str(table_number))
         self.capacity = capacity
         self.status = status
         self.order_ref = order_ref
@@ -105,9 +119,8 @@ class OrderStatus(Enum):
 
 class Order(Entity):
     def __init__(self, ref: str, table_number: int, items: Optional[List[str]] = None, total_amount: float = 0.0, status: OrderStatus = OrderStatus.OPEN):
-        super().__init__()
-        self.title = ref
-        self.description = table_number
+        # Use ref as title and table_number as a textual description
+        super().__init__(title=ref, description=str(table_number))
         self.items = items or []
         self.total_amount = total_amount
         self.status = status
@@ -115,10 +128,14 @@ class Order(Entity):
 
 class Receipt(Entity):
     def __init__(self, name: str, preparation_time: int, type_: str, price: float, instructions: str):
-        super().__init__()
-        self.name = name
+        # Use name as title and instructions as description for clarity
+        super().__init__(title=name, description=instructions)
         self.preparation_time = preparation_time
         self.type_ = type_
+        if preparation_time < 0:
+            raise ValueError("preparation_time cannot be negative")
+        if price < 0:
+            raise ValueError("price cannot be negative")
         self.price = price
         self.instructions = instructions
 
@@ -126,6 +143,8 @@ class Receipt(Entity):
 class Production(Entity):
     def __init__(self, product_ref: str, quantity: int, production_date: Optional[date] = None, expiry_date: Optional[date] = None):
         super().__init__()
+        if quantity <= 0:
+            raise ValueError("quantity must be positive")
         self.product_ref = product_ref
         self.quantity = quantity
         self.production_date = production_date or date.today()
@@ -133,7 +152,8 @@ class Production(Entity):
 
 class Supplier(Entity):
     def __init__(self, name: str, address: str, contact_info: str, products_supplied: Optional[List[str]] = None):
-        super().__init__()
+        # Use supplier name/address for inherited title/description
+        super().__init__(title=name, description=address)
         self.name = name
         self.address = address
         self.contact_info = contact_info
