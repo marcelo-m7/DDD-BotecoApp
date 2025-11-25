@@ -3,13 +3,14 @@
 from datetime import date
 from typing import List, Optional
 from enum import Enum
-
+from dataclasses import dataclass
 
 # Entities
 # Value Objects
 # Domain Services
 # Enums como “ubiquitous language”
-class Content:
+
+class Content():
     def __init__(self, *args, **kwargs):
         pass
 
