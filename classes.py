@@ -9,8 +9,11 @@ from enum import Enum
 # Value Objects
 # Domain Services
 # Enums como “ubiquitous language”
+class Content:
+    def __init__(self, *args, **kwargs):
+        pass
 
-class Entity:
+class BaseEntity:
     """Representa uma entidade do domínio, sem DB."""
     def __init__(self, 
                  title: Optional[str] = None,
@@ -50,7 +53,7 @@ class ProductSubcategory(Enum):
     ALCOHOLIC = "alcoholic"
     NON_ALCOHOLIC = "non_alcoholic"
 
-class Product(Entity):
+class Product(BaseEntity):
     def __init__(self,
                  name: str,
                  description: str,
@@ -102,7 +105,7 @@ class TableStatus(Enum):
     CLEANING = "cleaning"
 
 
-class DiningTable(Entity):
+class DiningTable(BaseEntity):
     def __init__(self, table_number: int, capacity: int, status: TableStatus, order_ref: Optional[str] = None):
         # Use the table number as the title (string) to keep `title` textual
         super().__init__(title=str(table_number))
@@ -117,7 +120,7 @@ class OrderStatus(Enum):
     CANCELED = "canceled"
 
 
-class Order(Entity):
+class Order(BaseEntity):
     def __init__(self, ref: str, table_number: int, items: Optional[List[str]] = None, total_amount: float = 0.0, status: OrderStatus = OrderStatus.OPEN):
         # Use ref as title and table_number as a textual description
         super().__init__(title=ref, description=str(table_number))
@@ -126,7 +129,7 @@ class Order(Entity):
         self.status = status
 
 
-class Receipt(Entity):
+class Receipt(BaseEntity):
     def __init__(self, name: str, preparation_time: int, type_: str, price: float, instructions: str):
         # Use name as title and instructions as description for clarity
         super().__init__(title=name, description=instructions)
@@ -140,7 +143,7 @@ class Receipt(Entity):
         self.instructions = instructions
 
 
-class Production(Entity):
+class Production(BaseEntity):
     def __init__(self, product_ref: str, quantity: int, production_date: Optional[date] = None, expiry_date: Optional[date] = None):
         super().__init__()
         if quantity <= 0:
@@ -150,7 +153,7 @@ class Production(Entity):
         self.production_date = production_date or date.today()
         self.expiry_date = expiry_date
 
-class Supplier(Entity):
+class Supplier(BaseEntity):
     def __init__(self, name: str, address: str, contact_info: str, products_supplied: Optional[List[str]] = None):
         # Use supplier name/address for inherited title/description
         super().__init__(title=name, description=address)
