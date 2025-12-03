@@ -1,0 +1,444 @@
+openapi: 3.0.0
+info:
+  title: Boteco_PRO API
+  version: 1.0.0
+  description: API RESTful para gerenciamento do restaurante Boteco_PRO
+paths:
+
+  /categorias:
+    post:
+      summary: Criar nova categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+      responses:
+        '200':
+          description: Categoria criada com sucesso
+
+  /fornecedores:
+    post:
+      summary: Criar novo fornecedor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                telefone:
+                  type: string
+      responses:
+        '200':
+          description: Fornecedor criado com sucesso
+
+  /produtos:
+    post:
+      summary: Criar novo produto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                descricao:
+                  type: string
+                preco_custo:
+                  type: number
+                stock_atual:
+                  type: integer
+                stock_minimo:
+                  type: integer
+                quantidade_encomenda:
+                  type: integer
+                id_fornecedor:
+                  type: integer
+      responses:
+        '200':
+          description: Produto cadastrado com sucesso
+
+  /pratos:
+    post:
+      summary: Criar novo prato
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                preco_venda:
+                  type: number
+                tempo_preparo:
+                  type: string
+                id_categoria:
+                  type: integer
+                observacoes:
+                  type: string
+      responses:
+        '200':
+          description: Prato cadastrado
+
+  /pratos/{id}/ingredientes:
+    post:
+      summary: Adicionar ingrediente ao prato
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_produto:
+                  type: integer
+                quantidade_utilizada:
+                  type: integer
+      responses:
+        '200':
+          description: Ingrediente adicionado
+
+  /mesas:
+    post:
+      summary: Criar nova mesa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                numero:
+                  type: integer
+                lugares:
+                  type: integer
+      responses:
+        '200':
+          description: Mesa criada
+
+  /estoque:
+    get:
+      summary: Listar estoque atual
+      responses:
+        '200':
+          description: Lista de produtos no estoque
+
+  /estoque/baixo:
+    get:
+      summary: Listar produtos abaixo do mínimo
+      responses:
+        '200':
+          description: Lista de produtos com estoque baixo
+
+  /estoque/repor:
+    post:
+      summary: Repor manualmente estoque de produto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_produto:
+                  type: integer
+                quantidade:
+                  type: integer
+      responses:
+        '200':
+          description: Estoque atualizado
+
+  /carreiras:
+    post:
+      summary: Criar nova carreira
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                descricao:
+                  type: string
+      responses:
+        '200':
+          description: Carreira criada
+
+  /niveis-carreira:
+    post:
+      summary: Criar novo nível de carreira
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                descricao:
+                  type: string
+                vencimento_base:
+                  type: number
+      responses:
+        '200':
+          description: Nível de carreira criado
+
+  /funcionarios:
+    post:
+      summary: Criar novo funcionário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                data_admissao:
+                  type: string
+                valor_hora:
+                  type: number
+                id_carreira:
+                  type: integer
+                id_nivel_carreira:
+                  type: integer
+      responses:
+        '200':
+          description: Funcionário criado
+
+    get:
+      summary: Listar todos os funcionários
+      responses:
+        '200':
+          description: Lista de funcionários
+
+  /funcionarios/{id}/horas:
+    post:
+      summary: Registrar horas trabalhadas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mes:
+                  type: integer
+                ano:
+                  type: integer
+                horas_normais:
+                  type: integer
+                horas_extra:
+                  type: integer
+      responses:
+        '200':
+          description: Horas registradas
+
+  /pedidos:
+    post:
+      summary: Criar novo pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_mesa:
+                  type: integer
+                id_funcionario:
+                  type: integer
+                id_cliente:
+                  type: integer
+                observacoes:
+                  type: string
+      responses:
+        '200':
+          description: Pedido criado
+
+  /pedidos/{id}/pratos:
+    post:
+      summary: Adicionar prato ao pedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_prato:
+                  type: integer
+                quantidade:
+                  type: integer
+      responses:
+        '200':
+          description: Prato adicionado
+
+  /pedidos/{id}/finalizar:
+    post:
+      summary: Finalizar pedido e gerar fatura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tipo_iva_comida:
+                  type: number
+                tipo_iva_bebida:
+                  type: number
+      responses:
+        '200':
+          description: Fatura gerada
+
+  /eventos:
+    post:
+      summary: Criar novo evento especial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                descricao:
+                  type: string
+                data_inicio:
+                  type: string
+                data_fim:
+                  type: string
+      responses:
+        '200':
+          description: Evento criado
+
+  /menus:
+    post:
+      summary: Criar novo menu especial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                preco:
+                  type: number
+                id_evento:
+                  type: integer
+      responses:
+        '200':
+          description: Menu criado
+
+  /menus/{id}/pratos:
+    post:
+      summary: Adicionar prato ao menu especial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_prato:
+                  type: integer
+      responses:
+        '200':
+          description: Prato adicionado ao menu
+
+  /menus/ativos:
+    get:
+      summary: Listar menus ativos
+      responses:
+        '200':
+          description: Lista de menus ativos
+
+  /financeiro/resumo:
+    get:
+      summary: Obter resumo financeiro por período
+      responses:
+        '200':
+          description: Resumo financeiro retornado
+
+  /financeiro/salarios:
+    get:
+      summary: Obter valor de salários em determinado mês/ano
+      parameters:
+        - name: mes
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: ano
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valor total de salários
+
+  /financeiro/estoque:
+    get:
+      summary: Obter valor gasto em estoque por período
+      parameters:
+        - name: mes
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: ano
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Valor gasto com produtos

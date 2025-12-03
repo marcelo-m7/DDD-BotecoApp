@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  title: Boteco_PRO API
+  version: 1.0.0
+  description: API RESTful para gerenciamento do restaurante Boteco_PRO
+paths:
+
+  /categorias:
+    post:
+      summary: Criar nova categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+      responses:
+        '200':
+          description: Categoria criada com sucesso
+
+  /fornecedores:
+    post:
+      summary: Criar novo fornecedor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                telefone:
+                  type: string
+      responses:
+        '200':
+          description: Fornecedor criado com sucesso
+
+  /estoque:
+    get:
+      summary: Listar estoque atual
+      responses:
+        '200':
+          description: Lista de produtos no estoque
+
+  /estoque/baixo:
+    get:
+      summary: Listar produtos abaixo do mínimo
+      responses:
+        '200':
+          description: Lista de produtos com estoque baixo
+
+  /estoque/repor:
+    post:
+      summary: Repor manualmente estoque de produto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_produto:
+                  type: integer
+                quantidade:
+                  type: integer
+      responses:
+        '200':
+          description: Estoque atualizado com sucesso
+
+  /funcionarios:
+    get:
+      summary: Listar funcionários
+      responses:
+        '200':
+          description: Lista de funcionários
+
+  /pedidos:
+    post:
+      summary: Realizar novo pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_mesa:
+                  type: integer
+                id_funcionario:
+                  type: integer
+                id_cliente:
+                  type: integer
+                observacoes:
+                  type: string
+      responses:
+        '200':
+          description: Pedido criado
+
+  /pedidos/{id}/pratos:
+    post:
+      summary: Adicionar prato ao pedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_prato:
+                  type: integer
+                quantidade:
+                  type: integer
+      responses:
+        '200':
+          description: Prato adicionado ao pedido
+
+  /pedidos/{id}/finalizar:
+    post:
+      summary: Finalizar pedido e gerar fatura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tipo_iva_comida:
+                  type: number
+                tipo_iva_bebida:
+                  type: number
+      responses:
+        '200':
+          description: Pedido finalizado e fatura gerada
+
+  /menus/ativos:
+    get:
+      summary: Listar menus especiais ativos
+      responses:
+        '200':
+          description: Lista de menus ativos
+
+  /financeiro/resumo:
+    get:
+      summary: Obter resumo financeiro por período
+      responses:
+        '200':
+          description: Resumo financeiro retornado
