@@ -11,6 +11,18 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+
+-- ==============================
+-- FUNCTIONS
+-- ==============================
+CREATE OR REPLACE FUNCTION execute_sql(sql TEXT)
+RETURNS void AS $$
+BEGIN
+  EXECUTE sql;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 -- ==============================
 -- TABLE: public.user
 -- Usuários globais do ecossistema (mínimo necessário p/ microsserviços)
