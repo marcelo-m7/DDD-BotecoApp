@@ -68,7 +68,7 @@ BEGIN
         boteco_id, owner_user_id, name, slug
     )
     VALUES (
-        uuid_generate_v4(),
+        gen_random_uuid(),
         owner_user_id,
         name,
         normalized_slug

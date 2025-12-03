@@ -26,7 +26,7 @@ $$ LANGUAGE plpgsql;
 -- TABLE: table (mesas)
 -- ============================================================
 CREATE TABLE table_entity (
-    table_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    table_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     label        TEXT NOT NULL,
     seats        INTEGER,
@@ -46,7 +46,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: pos_session (sessões PDV)
 -- ============================================================
 CREATE TABLE pos_session (
-    pos_session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    pos_session_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     staff_id      UUID NOT NULL,       -- referência ao schema global boteco_pro.staff
     opened_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -72,7 +72,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: order (pedidos)
 -- ============================================================
 CREATE TABLE "order" (
-    order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     table_id      UUID,
     pos_session_id UUID NOT NULL,
@@ -109,7 +109,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: menu_category
 -- ============================================================
 CREATE TABLE menu_category (
-    menu_category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    menu_category_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     name        TEXT NOT NULL,
     description TEXT,
@@ -132,7 +132,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: menu_item
 -- ============================================================
 CREATE TABLE menu_item (
-    menu_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    menu_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     menu_category_id UUID,
     product_base_id  UUID, -- optional reference to product
@@ -167,7 +167,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: product_category
 -- ============================================================
 CREATE TABLE product_category (
-    product_category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_category_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     name        TEXT NOT NULL,
     description TEXT,
@@ -189,7 +189,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: product
 -- ============================================================
 CREATE TABLE product (
-    product_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     product_category_id UUID NOT NULL,
     name        TEXT NOT NULL,
@@ -219,7 +219,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: order_item
 -- ============================================================
 CREATE TABLE order_item (
-    order_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     order_id     UUID NOT NULL,
     menu_item_id UUID NOT NULL,
@@ -255,7 +255,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: recipe
 -- ============================================================
 CREATE TABLE recipe (
-    recipe_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipe_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     name            TEXT NOT NULL,
     description     TEXT,
@@ -286,7 +286,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: recipe_product
 -- ============================================================
 CREATE TABLE recipe_product (
-    recipe_product_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipe_product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     recipe_id   UUID NOT NULL,
     product_id  UUID NOT NULL,
@@ -321,7 +321,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: payment
 -- ============================================================
 CREATE TABLE payment (
-    payment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    payment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     order_id     UUID NOT NULL,
     pos_session_id UUID NOT NULL,
@@ -359,7 +359,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- TABLE: payment_summary
 -- ============================================================
 CREATE TABLE payment_summary (
-    payment_summary_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    payment_summary_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     pos_session_id UUID NOT NULL,
 

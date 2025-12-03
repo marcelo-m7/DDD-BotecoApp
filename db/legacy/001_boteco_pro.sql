@@ -35,7 +35,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 CREATE TABLE IF NOT EXISTS "user" (
-    user_id        UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email          TEXT UNIQUE NOT NULL CHECK (email <> ''),
     password_hash  TEXT NOT NULL,
     first_name     TEXT NOT NULL,
@@ -58,7 +58,7 @@ BEFORE UPDATE ON "user"
 FOR EACH ROW EXECUTE FUNCTION boteco_pro.set_updated_at();
 
 CREATE TABLE IF NOT EXISTS boteco (
-    boteco_id      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    boteco_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_user_id  UUID NOT NULL,
     name           TEXT NOT NULL CHECK (name <> ''),
     legal_name     TEXT,
@@ -90,7 +90,7 @@ BEFORE UPDATE ON boteco
 FOR EACH ROW EXECUTE FUNCTION boteco_pro.set_updated_at();
 
 CREATE TABLE IF NOT EXISTS staff (
-    staff_id     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    staff_id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     boteco_id    UUID NOT NULL,
     user_id      UUID NOT NULL,
     role         TEXT NOT NULL DEFAULT 'member',

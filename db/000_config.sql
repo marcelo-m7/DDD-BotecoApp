@@ -28,7 +28,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Usuários globais do ecossistema (mínimo necessário p/ microsserviços)
 -- ==============================
 CREATE TABLE IF NOT EXISTS public.user (
-    user_id        UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email          TEXT UNIQUE NOT NULL,
     password_hash  TEXT NOT NULL,
     first_name     TEXT NOT NULL,
@@ -88,7 +88,7 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 -- Empresas do ecossistema (mínimo necessário)
 -- ==============================
 CREATE TABLE IF NOT EXISTS public.boteco (
-    boteco_id      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    boteco_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     owner_user_id  UUID NOT NULL,
     name           TEXT NOT NULL,
@@ -125,7 +125,7 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 -- Relação (N:N controlado) entre user ↔ boteco
 -- ==============================
 CREATE TABLE IF NOT EXISTS public.user_boteco (
-    user_boteco_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_boteco_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id        UUID NOT NULL,
     boteco_id      UUID NOT NULL,
     role           TEXT NOT NULL DEFAULT 'member',  -- admin, member

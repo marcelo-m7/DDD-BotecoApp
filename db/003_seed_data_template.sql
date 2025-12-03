@@ -12,18 +12,18 @@ SET search_path TO {{schema_name}};
 -- ============================================================
 INSERT INTO product_category (product_category_id, name, description, active)
 VALUES
-    (uuid_generate_v4(), 'Bebidas', 'Todos os tipos de bebidas', TRUE),
-    (uuid_generate_v4(), 'Comidas', 'Pratos, snacks, lanches', TRUE),
-    (uuid_generate_v4(), 'Outros', 'Produtos diversos', TRUE);
+    (gen_random_uuid(), 'Bebidas', 'Todos os tipos de bebidas', TRUE),
+    (gen_random_uuid(), 'Comidas', 'Pratos, snacks, lanches', TRUE),
+    (gen_random_uuid(), 'Outros', 'Produtos diversos', TRUE);
 
 -- ============================================================
 -- MENU CATEGORIES (default)
 -- ============================================================
 INSERT INTO menu_category (menu_category_id, name, description, position, active)
 VALUES
-    (uuid_generate_v4(), 'Entradas', 'Petiscos e snacks iniciais', 1, TRUE),
-    (uuid_generate_v4(), 'Pratos', 'Refeições principais', 2, TRUE),
-    (uuid_generate_v4(), 'Bebidas', 'Drinks, refrigerantes e outros', 3, TRUE);
+    (gen_random_uuid(), 'Entradas', 'Petiscos e snacks iniciais', 1, TRUE),
+    (gen_random_uuid(), 'Pratos', 'Refeições principais', 2, TRUE),
+    (gen_random_uuid(), 'Bebidas', 'Drinks, refrigerantes e outros', 3, TRUE);
 
 -- ============================================================
 -- DEFAULT TABLES (Mesas)
@@ -31,21 +31,21 @@ VALUES
 -- Obs: Ajuste quantas quiser. Aqui deixo 8 mesas padrão.
 INSERT INTO table_entity (table_id, label, seats, active)
 VALUES
-    (uuid_generate_v4(), 'Mesa 1', 4, TRUE),
-    (uuid_generate_v4(), 'Mesa 2', 4, TRUE),
-    (uuid_generate_v4(), 'Mesa 3', 4, TRUE),
-    (uuid_generate_v4(), 'Mesa 4', 4, TRUE),
-    (uuid_generate_v4(), 'Mesa 5', 2, TRUE),
-    (uuid_generate_v4(), 'Mesa 6', 2, TRUE),
-    (uuid_generate_v4(), 'Mesa 7', 6, TRUE),
-    (uuid_generate_v4(), 'Mesa 8', 6, TRUE);
+    (gen_random_uuid(), 'Mesa 1', 4, TRUE),
+    (gen_random_uuid(), 'Mesa 2', 4, TRUE),
+    (gen_random_uuid(), 'Mesa 3', 4, TRUE),
+    (gen_random_uuid(), 'Mesa 4', 4, TRUE),
+    (gen_random_uuid(), 'Mesa 5', 2, TRUE),
+    (gen_random_uuid(), 'Mesa 6', 2, TRUE),
+    (gen_random_uuid(), 'Mesa 7', 6, TRUE),
+    (gen_random_uuid(), 'Mesa 8', 6, TRUE);
 
 -- ============================================================
 -- OPTIONAL: Basic placeholder products for quick testing
 -- Comentado por padrão — ativa se quiser preencher automaticamente.
 -- ============================================================
 -- INSERT INTO product (product_id, product_category_id, name, cost, unit, active)
--- SELECT uuid_generate_v4(), pc.product_category_id, 'Produto Exemplo', 1.00, 'unit', TRUE
+-- SELECT gen_random_uuid(), pc.product_category_id, 'Produto Exemplo', 1.00, 'unit', TRUE
 -- FROM product_category pc
 -- WHERE pc.name = 'Outros'
 -- LIMIT 1;
@@ -56,8 +56,8 @@ VALUES
 -- ============================================================
 -- INSERT INTO menu_item (menu_item_id, name, price, currency, visible, is_featured, position)
 -- VALUES
---     (uuid_generate_v4(), 'Item de Teste 1', 5.00, 'EUR', TRUE, FALSE, 1),
---     (uuid_generate_v4(), 'Item de Teste 2', 8.50, 'EUR', TRUE, TRUE, 2);
+--     (gen_random_uuid(), 'Item de Teste 1', 5.00, 'EUR', TRUE, FALSE, 1),
+--     (gen_random_uuid(), 'Item de Teste 2', 8.50, 'EUR', TRUE, TRUE, 2);
 
 -- ============================================================
 -- OPTIONAL: Create a first POS session automatically
@@ -66,7 +66,7 @@ VALUES
 -- ============================================================
 -- INSERT INTO pos_session (pos_session_id, staff_id, opening_amount, status)
 -- VALUES
---     (uuid_generate_v4(), '{{default_staff_id}}', 0, 'open');
+--     (gen_random_uuid(), '{{default_staff_id}}', 0, 'open');
 
 -- ============================================================
 -- OPTIONAL: Seed basic tags or metadata
