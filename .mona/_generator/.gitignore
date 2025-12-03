@@ -1,0 +1,12 @@
+.mona.me.ignore/
+.venv/
+
+__pycache__/
+*.pyc
+.codemachine/
+.venv/
+.codemachine/logs
+.codemachine/memory
+.codemachine/prompts
+.codemachine/agents
+.codemachine/template.json
