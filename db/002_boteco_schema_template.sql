@@ -36,6 +36,8 @@ CREATE TABLE table_entity (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_table_updated ON table_entity;
 CREATE TRIGGER trg_table_updated
 BEFORE UPDATE ON table_entity
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -60,6 +62,8 @@ CREATE TABLE pos_session (
 CREATE INDEX idx_pos_session_staff ON pos_session(staff_id);
 CREATE INDEX idx_pos_session_status ON pos_session(status);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_pos_session_updated ON pos_session;
 CREATE TRIGGER trg_pos_session_updated
 BEFORE UPDATE ON pos_session
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -95,6 +99,8 @@ CREATE INDEX idx_order_session ON "order"(pos_session_id);
 CREATE INDEX idx_order_table ON "order"(table_id);
 CREATE INDEX idx_order_status ON "order"(status);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_order_updated ON "order";
 CREATE TRIGGER trg_order_updated
 BEFORE UPDATE ON "order"
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -116,6 +122,8 @@ CREATE TABLE menu_category (
 
 CREATE INDEX idx_menu_category_active ON menu_category(active);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_menu_category_updated ON menu_category;
 CREATE TRIGGER trg_menu_category_updated
 BEFORE UPDATE ON menu_category
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -149,6 +157,8 @@ CREATE TABLE menu_item (
 CREATE INDEX idx_menu_item_category ON menu_item(menu_category_id);
 CREATE INDEX idx_menu_item_visible ON menu_item(visible);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_menu_item_updated ON menu_item;
 CREATE TRIGGER trg_menu_item_updated
 BEFORE UPDATE ON menu_item
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -169,6 +179,8 @@ CREATE TABLE product_category (
 
 CREATE INDEX idx_product_category_active ON product_category(active);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_product_category_updated ON product_category;
 CREATE TRIGGER trg_product_category_updated
 BEFORE UPDATE ON product_category
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -197,6 +209,8 @@ CREATE TABLE product (
 CREATE INDEX idx_product_category ON product(product_category_id);
 CREATE INDEX idx_product_active ON product(active);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_product_updated ON product;
 CREATE TRIGGER trg_product_updated
 BEFORE UPDATE ON product
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -231,6 +245,8 @@ CREATE TABLE order_item (
 
 CREATE INDEX idx_order_item_order ON order_item(order_id);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_order_item_updated ON order_item;
 CREATE TRIGGER trg_order_item_updated
 BEFORE UPDATE ON order_item
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -260,6 +276,8 @@ CREATE TABLE recipe (
 
 CREATE INDEX idx_recipe_active ON recipe(active);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_recipe_updated ON recipe;
 CREATE TRIGGER trg_recipe_updated
 BEFORE UPDATE ON recipe
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -293,6 +311,8 @@ CREATE TABLE recipe_product (
 
 CREATE INDEX idx_recipe_product_recipe ON recipe_product(recipe_id);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_recipe_product_updated ON recipe_product;
 CREATE TRIGGER trg_recipe_product_updated
 BEFORE UPDATE ON recipe_product
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -329,6 +349,8 @@ CREATE TABLE payment (
 CREATE INDEX idx_payment_order ON payment(order_id);
 CREATE INDEX idx_payment_method ON payment(method);
 
+-- Drop and recreate the trigger to ensure idempotence
+DROP TRIGGER IF EXISTS trg_payment_updated ON payment;
 CREATE TRIGGER trg_payment_updated
 BEFORE UPDATE ON payment
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();

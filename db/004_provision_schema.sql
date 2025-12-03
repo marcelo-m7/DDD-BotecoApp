@@ -13,19 +13,11 @@
 SET search_path TO public;
 
 -- ============================================================
--- Helper: normalizar slug
+-- slug normalization
 -- ============================================================
-CREATE OR REPLACE FUNCTION normalize_slug(raw_slug TEXT)
-RETURNS TEXT AS $$
-DECLARE
-    cleaned TEXT;
-BEGIN
-    cleaned := regexp_replace(lower(raw_slug), '[^a-z0-9_]', '_', 'g');
-    cleaned := regexp_replace(cleaned, '_+', '_', 'g');
-    cleaned := regexp_replace(cleaned, '^_|_$', '', 'g');
-    RETURN cleaned;
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+-- Normalization of slugs is now provided by public.normalize_slug(),
+-- defined in the 000_config.sql.  Reuse that function here instead
+-- of redefining it, so all components share the same sanitization rules.
 
 
 -- ============================================================
@@ -63,8 +55,8 @@ DECLARE
     schema_name TEXT;
     new_boteco_id UUID;
 BEGIN
-    -- Normalizar slug
-    normalized_slug := normalize_slug(slug);
+    -- Normalize slug using the shared helper in the public schema
+    normalized_slug := public.normalize_slug(slug);
     schema_name := 'boteco_' || normalized_slug;
 
     RAISE NOTICE 'Creating boteco with slug: % -> schema %', normalized_slug, schema_name;

@@ -41,6 +41,13 @@ CREATE TABLE IF NOT EXISTS public.user (
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+--
+-- Drop and recreate the timestamp trigger on the user table to make
+-- this script idempotent on successive runs.  Dropping the trigger
+-- before re‑creating it avoids duplicate trigger errors when the file
+-- is rerun.
+--
+DROP TRIGGER IF EXISTS trg_public_user_updated ON public.user;
 
 -- Trigger updated_at
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -51,6 +58,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--
+-- Helper function for normalizing slugs.  Slugs are used to
+-- construct schema names and must consist of lowercase letters,
+-- digits and underscores only.  Multiple consecutive underscores
+-- are collapsed into a single one and leading/trailing underscores
+-- are removed.  Defining this function in the public schema makes
+-- it available throughout the database so all components can use
+-- a single implementation when sanitizing user input.
+--
+CREATE OR REPLACE FUNCTION public.normalize_slug(raw_slug TEXT)
+RETURNS TEXT AS $$
+DECLARE
+    cleaned TEXT;
+BEGIN
+    cleaned := regexp_replace(lower(raw_slug), '[^a-z0-9_]', '_', 'g');
+    cleaned := regexp_replace(cleaned, '_+', '_', 'g');
+    cleaned := regexp_replace(cleaned, '^_|_$', '', 'g');
+    RETURN cleaned;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
 CREATE TRIGGER trg_public_user_updated
 BEFORE UPDATE ON public.user
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -81,7 +108,13 @@ CREATE TABLE IF NOT EXISTS public.boteco (
         REFERENCES public.user(user_id)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
+-- Create an index on slug to improve lookup performance.  The
+-- IF NOT EXISTS clause makes this idempotent.
+CREATE INDEX IF NOT EXISTS idx_boteco_slug ON public.boteco(slug);
 
+-- Drop and recreate the trigger on the boteco table.  Doing this
+-- ensures the script can be run multiple times without error.
+DROP TRIGGER IF EXISTS trg_public_boteco_updated ON public.boteco;
 CREATE TRIGGER trg_public_boteco_updated
 BEFORE UPDATE ON public.boteco
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -114,7 +147,12 @@ CREATE TABLE IF NOT EXISTS public.user_boteco (
     CONSTRAINT unique_user_per_boteco
         UNIQUE (user_id, boteco_id)
 );
+-- Add indexes on the foreign key columns to speed up membership lookups
+CREATE INDEX IF NOT EXISTS idx_user_boteco_user ON public.user_boteco(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_boteco_boteco ON public.user_boteco(boteco_id);
 
+-- Drop and recreate the trigger on the user_boteco table for idempotence
+DROP TRIGGER IF EXISTS trg_public_user_boteco_updated ON public.user_boteco;
 CREATE TRIGGER trg_public_user_boteco_updated
 BEFORE UPDATE ON public.user_boteco
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
