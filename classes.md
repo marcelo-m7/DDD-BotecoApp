@@ -1,3 +1,135 @@
+# 🎯 **Objetivos do RLS por Boteco**
+
+## **006_rls_per_boteco_schema.sql**
+
+006_rls_per_boteco_schema.sql, responsável por aplicar **Row-Level Security** dentro de **cada schema multitenant** (`boteco_{slug}`).
+
+Esse arquivo será incluído no processo de provisão (junto com 002 e 003) e deve ser **parametrizado** com `{{schema_name}}`, pois será executado separadamente para cada boteco.
+
+---
+
+### ✔ 1. Somente usuários associados ao boteco (via `public.user_boteco`) podem acessar o schema
+
+→ usuário só acessa o boteco atual que ele selecionou no app.
+
+### ✔ 2. Supabase Auth deve enviar no JWT:
+
+* `sub` → user_id
+* `boteco_id` → empresa ativa
+* `role` → admin / member
+
+### ✔ 3. Administrador pode tudo
+
+### ✔ 4. Membro pode operar POS (leitura e escrita nas tabelas de pedidos, mesas, items etc.)
+
+### ✔ 5. Ninguém de fora do boteco tem acesso
+
+### ✔ 6. Service role ignora RLS (padrão do Supabase)
+
+---
+
+# 🧠 Princípio central do multitenancy
+
+Dentro de cada schema `boteco_{slug}`, **não há coluna `boteco_id`**.
+
+A identificação ocorre pelo próprio schema.
+
+Então, o acesso se dá por comparação:
+
+```
+auth.jwt() -> claim "boteco_id"
+=
+public.boteco.slug
+```
+
+Ou seja: **"o usuário está logado no boteco correto?"**
+
+---
+
+# 🔐 Lógica base das políticas:
+
+```sql
+USING (
+    auth.role() = 'service_role'
+    OR (
+        auth.uid() IN (
+            SELECT user_id FROM public.user_boteco 
+            WHERE boteco_id = current_boteco_id()
+        )
+    )
+)
+```
+
+Mas precisamos derivar `current_boteco_id()` pelo slug do schema.
+
+---
+
+# 🔧 Criaremos uma função dentro do schema:
+
+```sql
+SELECT boteco_id
+FROM public.boteco
+WHERE slug = {{slug}}
+LIMIT 1;
+```
+
+Isso fornece **boteco_id**, necessário para validar staff.
+
+---
+
+# 🧩 Também criaremos helper functions:
+
+* `current_user_is_admin()`
+* `current_user_is_member()`
+* `current_user_is_staff()`
+
+---
+
+# 🔥 Agora sim, o arquivo completo.
+
+---
+
+# ✅ **006_rls_per_boteco_schema.sql**
+
+> **IMPORTANTE:**
+> Este arquivo é um **TEMPLATE** e deve ser processado substituindo `{{schema_name}}` e `{{slug}}`.
+
+---
+
+# 🧠 Por que este arquivo é perfeito?
+
+### ✔ Independe do número e nomes das tabelas
+
+As policies são criadas dinamicamente para todas as tabelas presentes no schema.
+
+### ✔ Staff → CRUD permitido
+
+### ✔ Admin → DELETE permitido
+
+### ✔ Membro → POS (pedido, mesa, item) permitido
+
+### ✔ Não-staff → zero acesso
+
+### ✔ JWT com `auth.uid()` decide tudo
+
+### ✔ Supabase service_role ignora RLS (natural)
+
+---
+
+
+* 000 (base)
+* 001 (global)
+* 002 (schema template)
+* 003 (seed)
+* 004 (provision)
+* 005 (global RLS)
+* 006 (per-boteco RLS)
+
+
+---
+
+# Diagram
+
 ```mermaid
 ---
 config:
