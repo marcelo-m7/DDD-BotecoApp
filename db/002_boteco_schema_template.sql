@@ -6,7 +6,7 @@
 -- ============================================================
 
 -- Variável (substituir automaticamente)
--- {{schema_name}} ex: boteco_bardojona_9sd3h
+-- {{schema_name}} ex: boteco_bardojona_9sd3h boteco_simpsons_na_lama_9sd35
 
 CREATE SCHEMA IF NOT EXISTS {{schema_name}};
 SET search_path TO {{schema_name}};

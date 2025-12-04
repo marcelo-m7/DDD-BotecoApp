@@ -100,7 +100,7 @@ DROP TRIGGER IF EXISTS trg_update_jwt_on_user_create ON public."user";
 CREATE TRIGGER trg_update_jwt_on_user_create
 AFTER INSERT ON public."user"
 FOR EACH ROW
-EXECUTE FUNCTION public.update_jwt_claims(NEW.user_id);
+EXECUTE FUNCTION public.trigger_update_jwt_claims();
 
 
 -- ============================================================

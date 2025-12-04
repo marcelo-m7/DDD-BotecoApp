@@ -76,7 +76,7 @@ BEGIN
         SELECT tablename FROM pg_tables
         WHERE schemaname = '{{schema_name}}'
     LOOP
-        EXECUTE format('ALTER TABLE {{schema_name}}.%I ENABLE ROW LEVEL SECURITY', t);
+        EXECUTE format('ALTER TABLE {{schema_name}}.%s ENABLE ROW LEVEL SECURITY', t);
     END LOOP;
 END;
 $rls$;
@@ -96,30 +96,30 @@ BEGIN
         SELECT tablename FROM pg_tables WHERE schemaname = '{{schema_name}}'
     LOOP
         EXECUTE format('
-            CREATE POLICY p_select_%I_staff
-            ON {{schema_name}}.%I
+            CREATE POLICY p_select_%s_staff
+            ON {{schema_name}}.%s
             FOR SELECT
             USING ( {{schema_name}}.current_user_is_staff() );
         ', t, t);
 
         EXECUTE format('
-            CREATE POLICY p_insert_%I_admin_or_member
-            ON {{schema_name}}.%I
+            CREATE POLICY p_insert_%s_admin_or_member
+            ON {{schema_name}}.%s
             FOR INSERT
             WITH CHECK ( {{schema_name}}.current_user_is_staff() );
         ', t, t);
 
         EXECUTE format('
-            CREATE POLICY p_update_%I_admin_or_member
-            ON {{schema_name}}.%I
+            CREATE POLICY p_update_%s_admin_or_member
+            ON {{schema_name}}.%s
             FOR UPDATE
             USING ( {{schema_name}}.current_user_is_staff() )
             WITH CHECK ( {{schema_name}}.current_user_is_staff() );
         ', t, t);
 
         EXECUTE format('
-            CREATE POLICY p_delete_%I_admin_only
-            ON {{schema_name}}.%I
+            CREATE POLICY p_delete_%s_admin_only
+            ON {{schema_name}}.%s
             FOR DELETE
             USING ( {{schema_name}}.current_user_is_admin() );
         ', t, t);
