@@ -277,7 +277,7 @@ final items = await supabase
 Os microsserviços usarão o usuário SQL:
 
 ```
-boteco_backend_user
+boteco
 ```
 
 Com acesso apenas a:

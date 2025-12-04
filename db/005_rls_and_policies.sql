@@ -120,11 +120,11 @@ USING (false);
 -- 5. PERMISSÕES DE LEITURA PARA MICROSSERVIÇOS
 -- ============================================================
 
--- O papel boteco_backend_user, criado em 000_config.sql,
+-- O papel boteco, criado em 000_config.sql,
 -- precisa de acesso de leitura às tabelas globais para operar.
-GRANT SELECT ON public.user TO boteco_backend_user;
-GRANT SELECT ON public.boteco TO boteco_backend_user;
-GRANT SELECT ON public.user_boteco TO boteco_backend_user;
+GRANT SELECT ON public.user TO boteco;
+GRANT SELECT ON public.boteco TO boteco;
+GRANT SELECT ON public.user_boteco TO boteco;
 
 -- ============================================================
 -- 6. SERVICE ROLE

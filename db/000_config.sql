@@ -3,6 +3,7 @@
 -- Configuração inicial do banco de dados Boteco Pro
 -- Cria tabelas base no schema public e um usuário PostgreSQL
 -- para uso dos microsserviços.
+-- tip: shuf -i 1-200 -n 1 | sha512sum | cut -c1-10
 -- ============================================================
 
 -- ==============================
@@ -30,7 +31,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TABLE IF NOT EXISTS public.user (
     user_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email          TEXT UNIQUE NOT NULL,
-    password_hash  TEXT NOT NULL,
+    user_ref       TEXT NOT NULL,
     first_name     TEXT NOT NULL,
     last_name      TEXT NOT NULL,
 
@@ -166,9 +167,9 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT FROM pg_roles WHERE rolname = 'boteco_backend_user'
+        SELECT FROM pg_roles WHERE rolname = 'boteco'
     ) THEN
-        CREATE ROLE boteco_backend_user LOGIN PASSWORD 'CHANGE_ME_NOW';
+        CREATE ROLE boteco LOGIN PASSWORD 'a6111a2239';
     END IF;
 END;
 $$;
@@ -177,19 +178,19 @@ $$;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
 -- Backend user can use public schema, but not create objects
-GRANT USAGE ON SCHEMA public TO boteco_backend_user;
+GRANT USAGE ON SCHEMA public TO boteco;
 
 -- Allow only read/write on the three tables
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.user TO boteco_backend_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.boteco TO boteco_backend_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_boteco TO boteco_backend_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user TO boteco;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.boteco TO boteco;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_boteco TO boteco;
 
 -- Default privileges so novas tabelas no public não fiquem abertas
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
     REVOKE ALL ON TABLES FROM PUBLIC;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO boteco_backend_user;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO boteco;
 
 
 -- ============================================================
